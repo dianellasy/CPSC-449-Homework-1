@@ -115,14 +115,23 @@ public class BookController {
     @PutMapping("/books/{id}")
     public Book updateBook(@PathVariable Long id, @RequestBody Book bookToBeUpdated) {
         return books.stream()
+                // Find the first book whose ID matches the path variable
                 .filter(book -> book.getId().equals(id))
                 .findFirst()
                 .map(currentBookInArray -> {
+                    // Set the book that will be updated (bookToBeUpdated) to the same ID that it currently has
                     bookToBeUpdated.setId(id);
+
+                    // Set indexOfCurrentBookInArray to book's current index in the array
                     int indexOfCurrentBookInArray = books.indexOf(currentBookInArray);
+
+                    // Update the old book with the new book
                     books.set(indexOfCurrentBookInArray, bookToBeUpdated);
+
+                    // Return the updated book
                     return bookToBeUpdated;
                 })
+                // If there is no match, return null
                 .orElse(null);
     }
 
