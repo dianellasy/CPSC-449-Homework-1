@@ -1,16 +1,16 @@
 # Building On Books API: Advanced Endpoints & Features
 
-## PUT endpoint (update book)
+## PUT Endpoint (Update Book)
 ![img.png](img.png)
 
-## PATCH endpoint (partial update)
+## PATCH Endpoint (Partial Update)
 ![img_1.png](img_1.png)
 
-## DELETE endpoint (remove book)
+## DELETE Endpoint (Remove Book)
 ![img_2.png](img_2.png)
 
-## GET endpoint with pagination
+## GET Endpoint with Pagination
 ![img_3.png](img_3.png)
 
-## Advanced GET endpoint with filtering, sorting, and pagination combined in the valid order
+## Advanced GET Endpoint with Filtering, Sorting, and Pagination Combined in the Valid Order
 ![img_4.png](img_4.png)
