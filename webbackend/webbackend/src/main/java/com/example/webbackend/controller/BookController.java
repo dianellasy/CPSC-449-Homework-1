@@ -90,6 +90,19 @@ public class BookController {
                 .orElse(null);
     }
 
+    // DELETE endpoint (remove book)
+    @DeleteMapping("/books/{id}")
+    public String deleteBook(@PathVariable Long id) {
+        return books.stream()
+                .filter(book -> book.getId().equals(id))
+                .findFirst()
+                .map(bookToBeDeletedInArray -> {
+                    books.remove(bookToBeDeletedInArray);
+                    return "The book is deleted.";
+                })
+                .orElse("The book is not found");
+    }
+
     // Search by title
     @GetMapping("/books/search")
     public List<Book> searchByTitle(
