@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 public class BookController {
 
     private List<Book> books = new ArrayList<>();
-
     private Long nextId = 1L;
 
     public BookController() {
@@ -35,27 +34,42 @@ public class BookController {
         books.add(new Book(nextId++, "Automate the Boring Stuff", "Al Sweigart", 33.50));
     }
 
-    // get all books - /api/books
+    // GET /api/books (all books)
     @GetMapping("/books")
     public List<Book> getBooks() {
         return books;
     }
 
-    // get book by id
+    // GET /api/books/{id} (book by ID)
     @GetMapping("/books/{id}")
     public Book getBook(@PathVariable Long id) {
         return books.stream().filter(book -> book.getId().equals(id))
                 .findFirst().orElse(null);
     }
 
-    // create a new book
+    // POST /api/books (create book)
     @PostMapping("/books")
     public List<Book> createBook(@RequestBody Book book) {
         books.add(book);
         return books;
     }
 
-    // search by title
+    // PUT endpoint (update book)
+    @PutMapping("/books/{id}")
+    public Book updateBook(@PathVariable Long id, @RequestBody Book bookToBeUpdated) {
+        return books.stream()
+                .filter(book -> book.getId().equals(id))
+                .findFirst()
+                .map(currentBookInArray -> {
+                    bookToBeUpdated.setId(id);
+                    int indexOfCurrentBookInArray = books.indexOf(currentBookInArray);
+                    books.set(indexOfCurrentBookInArray, bookToBeUpdated);
+                    return bookToBeUpdated;
+                })
+                .orElse(null);
+    }
+
+    // Search by title
     @GetMapping("/books/search")
     public List<Book> searchByTitle(
             @RequestParam(required = false, defaultValue = "") String title
@@ -70,7 +84,7 @@ public class BookController {
 
     }
 
-    // price range
+    // Price range
     @GetMapping("/books/price-range")
     public List<Book> getBooksByPrice(
             @RequestParam(required = false) Double minPrice,
@@ -85,7 +99,7 @@ public class BookController {
                 }).collect(Collectors.toList());
     }
 
-    // sort
+    // Sort
     @GetMapping("/books/sorted")
     public List<Book> getSortedBooks(
             @RequestParam(required = false, defaultValue = "title") String sortBy,
