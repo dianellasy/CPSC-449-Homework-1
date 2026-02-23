@@ -117,65 +117,130 @@ public class BookController {
                 .collect(Collectors.toList());
     }
 
-    // Search by title
-    @GetMapping("/books/search")
-    public List<Book> searchByTitle(
-            @RequestParam(required = false, defaultValue = "") String title
+    // Advanced GET endpoint with filtering, sorting, and pagination combined in the valid order
+    @GetMapping("/books/advanced")
+    public List<Book> advancedQuery(
+            @RequestParam(required = false) String titleFilter,
+            @RequestParam(required = false) String authorFilter,
+            @RequestParam(required = false) Double minimumPrice,
+            @RequestParam(required = false) Double maximumPrice,
+            @RequestParam(defaultValue = "title") String sortField,
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            @RequestParam(defaultValue = "0") int indexOfPage,
+            @RequestParam(defaultValue = "5") int itemsPerPage
     ) {
-        if(title.isEmpty()) {
-            return books;
-        }
 
-        return books.stream()
-                .filter(book -> book.getTitle().toLowerCase().contains(title.toLowerCase()))
-                .collect(Collectors.toList());
+        Comparator<Book> bookComparator;
 
-    }
-
-    // Price range
-    @GetMapping("/books/price-range")
-    public List<Book> getBooksByPrice(
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice
-    ) {
-        return books.stream()
-                .filter(book -> {
-                    boolean min = minPrice == null || book.getPrice() >= minPrice;
-                    boolean max = maxPrice == null || book.getPrice() <= maxPrice;
-
-                    return min && max;
-                }).collect(Collectors.toList());
-    }
-
-    // Sort
-    @GetMapping("/books/sorted")
-    public List<Book> getSortedBooks(
-            @RequestParam(required = false, defaultValue = "title") String sortBy,
-            @RequestParam(required = false, defaultValue = "asc") String order
-    ){
-        Comparator<Book> comparator;
-
-        switch(sortBy.toLowerCase()) {
+        switch (sortField.toLowerCase()) {
             case "author":
-                comparator = Comparator.comparing(Book::getAuthor);
+                bookComparator = Comparator.comparing(Book::getAuthor);
+                break;
+            case "price":
+                bookComparator = Comparator.comparing(Book::getPrice);
                 break;
             case "title":
-                comparator = Comparator.comparing(Book::getTitle);
+                bookComparator = Comparator.comparing(Book::getTitle);
+                break;
             default:
-                comparator = Comparator.comparing(Book::getTitle);
+                bookComparator = Comparator.comparing(Book::getTitle);
                 break;
         }
 
-        if("desc".equalsIgnoreCase(order)) {
-            comparator = comparator.reversed();
+        if ("desc".equalsIgnoreCase(sortDirection)) {
+            bookComparator = bookComparator.reversed();
         }
 
-        return books.stream().sorted(comparator)
+        int numberOfBooksToSkip = indexOfPage * itemsPerPage;
+
+        return books.stream()
+                .filter(book -> {
+                    boolean matchesTitle =
+                            titleFilter == null ||
+                            book.getTitle().toLowerCase().contains(titleFilter.toLowerCase());
+
+                    boolean matchesAuthor =
+                            authorFilter == null ||
+                            book.getAuthor().toLowerCase().contains(authorFilter.toLowerCase());
+
+                    boolean matchesMinimumPrice =
+                            minimumPrice == null ||
+                            book.getPrice() >= minimumPrice;
+
+                    boolean matchesMaximumPrice =
+                            maximumPrice == null ||
+                            book.getPrice() <= maximumPrice;
+
+                    return matchesTitle && matchesAuthor && matchesMinimumPrice && matchesMaximumPrice;
+                })
+
+                .sorted(bookComparator)
+
+                .skip(numberOfBooksToSkip)
+                .limit(itemsPerPage)
+
                 .collect(Collectors.toList());
-
-
-
     }
 
 
+//    // Search by title
+//    @GetMapping("/books/search")
+//    public List<Book> searchByTitle(
+//            @RequestParam(required = false, defaultValue = "") String title
+//    ) {
+//        if(title.isEmpty()) {
+//            return books;
+//        }
+//
+//        return books.stream()
+//                .filter(book -> book.getTitle().toLowerCase().contains(title.toLowerCase()))
+//                .collect(Collectors.toList());
+//    }
+
+//    // Price range
+//    @GetMapping("/books/price-range")
+//    public List<Book> getBooksByPrice(
+//            @RequestParam(required = false) Double minPrice,
+//            @RequestParam(required = false) Double maxPrice
+//    ) {
+//        return books.stream()
+//                .filter(book -> {
+//                    boolean min = minPrice == null || book.getPrice() >= minPrice;
+//                    boolean max = maxPrice == null || book.getPrice() <= maxPrice;
+//
+//                    return min && max;
+//                }).collect(Collectors.toList());
+//    }
+//
+//    // Sort
+//    @GetMapping("/books/sorted")
+//    public List<Book> getSortedBooks(
+//            @RequestParam(required = false, defaultValue = "title") String sortBy,
+//            @RequestParam(required = false, defaultValue = "asc") String order
+//    ){
+//        Comparator<Book> comparator;
+//
+//        switch(sortBy.toLowerCase()) {
+//            case "author":
+//                comparator = Comparator.comparing(Book::getAuthor);
+//                break;
+//            case "title":
+//                comparator = Comparator.comparing(Book::getTitle);
+//            default:
+//                comparator = Comparator.comparing(Book::getTitle);
+//                break;
+//        }
+//
+//        if("desc".equalsIgnoreCase(order)) {
+//            comparator = comparator.reversed();
+//        }
+//
+//        return books.stream().sorted(comparator)
+//                .collect(Collectors.toList());
+//
+//
+//
+//    }
+//
+//
 }
