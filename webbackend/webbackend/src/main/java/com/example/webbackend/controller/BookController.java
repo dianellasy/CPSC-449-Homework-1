@@ -54,6 +54,63 @@ public class BookController {
         return books;
     }
 
+    // Search by title
+    @GetMapping("/books/search")
+    public List<Book> searchByTitle(
+            @RequestParam(required = false, defaultValue = "") String title
+    ) {
+        if(title.isEmpty()) {
+            return books;
+        }
+
+        return books.stream()
+                .filter(book -> book.getTitle().toLowerCase().contains(title.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    // Price range
+    @GetMapping("/books/price-range")
+    public List<Book> getBooksByPrice(
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice
+    ) {
+        return books.stream()
+                .filter(book -> {
+                    boolean min = minPrice == null || book.getPrice() >= minPrice;
+                    boolean max = maxPrice == null || book.getPrice() <= maxPrice;
+
+                    return min && max;
+                }).collect(Collectors.toList());
+    }
+
+    // Sort
+    @GetMapping("/books/sorted")
+    public List<Book> getSortedBooks(
+            @RequestParam(required = false, defaultValue = "title") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String order
+    ){
+        Comparator<Book> comparator;
+
+        switch(sortBy.toLowerCase()) {
+            case "author":
+                comparator = Comparator.comparing(Book::getAuthor);
+                break;
+            case "title":
+                comparator = Comparator.comparing(Book::getTitle);
+            default:
+                comparator = Comparator.comparing(Book::getTitle);
+                break;
+        }
+
+        if("desc".equalsIgnoreCase(order)) {
+            comparator = comparator.reversed();
+        }
+
+        return books.stream().sorted(comparator)
+                .collect(Collectors.toList());
+    }
+
+    // Start Homework 1
     // PUT endpoint (update book)
     @PutMapping("/books/{id}")
     public Book updateBook(@PathVariable Long id, @RequestBody Book bookToBeUpdated) {
@@ -181,66 +238,4 @@ public class BookController {
 
                 .collect(Collectors.toList());
     }
-
-
-//    // Search by title
-//    @GetMapping("/books/search")
-//    public List<Book> searchByTitle(
-//            @RequestParam(required = false, defaultValue = "") String title
-//    ) {
-//        if(title.isEmpty()) {
-//            return books;
-//        }
-//
-//        return books.stream()
-//                .filter(book -> book.getTitle().toLowerCase().contains(title.toLowerCase()))
-//                .collect(Collectors.toList());
-//    }
-
-//    // Price range
-//    @GetMapping("/books/price-range")
-//    public List<Book> getBooksByPrice(
-//            @RequestParam(required = false) Double minPrice,
-//            @RequestParam(required = false) Double maxPrice
-//    ) {
-//        return books.stream()
-//                .filter(book -> {
-//                    boolean min = minPrice == null || book.getPrice() >= minPrice;
-//                    boolean max = maxPrice == null || book.getPrice() <= maxPrice;
-//
-//                    return min && max;
-//                }).collect(Collectors.toList());
-//    }
-//
-//    // Sort
-//    @GetMapping("/books/sorted")
-//    public List<Book> getSortedBooks(
-//            @RequestParam(required = false, defaultValue = "title") String sortBy,
-//            @RequestParam(required = false, defaultValue = "asc") String order
-//    ){
-//        Comparator<Book> comparator;
-//
-//        switch(sortBy.toLowerCase()) {
-//            case "author":
-//                comparator = Comparator.comparing(Book::getAuthor);
-//                break;
-//            case "title":
-//                comparator = Comparator.comparing(Book::getTitle);
-//            default:
-//                comparator = Comparator.comparing(Book::getTitle);
-//                break;
-//        }
-//
-//        if("desc".equalsIgnoreCase(order)) {
-//            comparator = comparator.reversed();
-//        }
-//
-//        return books.stream().sorted(comparator)
-//                .collect(Collectors.toList());
-//
-//
-//
-//    }
-//
-//
 }
