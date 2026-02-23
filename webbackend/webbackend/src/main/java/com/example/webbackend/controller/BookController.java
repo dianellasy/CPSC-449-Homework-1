@@ -69,6 +69,27 @@ public class BookController {
                 .orElse(null);
     }
 
+    // PATCH endpoint (partial update)
+    @PatchMapping("/books/{id}")
+    public Book partiallyUpdateBook(@PathVariable Long id, @RequestBody Book bookToBePartiallyUpdated) {
+        return books.stream()
+                .filter(book -> book.getId().equals(id))
+                .findFirst()
+                .map(currentBookInArray -> {
+                    Optional.ofNullable(bookToBePartiallyUpdated.getTitle())
+                            .ifPresent(currentBookInArray::setTitle);
+
+                    Optional.ofNullable(bookToBePartiallyUpdated.getAuthor())
+                            .ifPresent(currentBookInArray::setAuthor);
+
+                    Optional.ofNullable(bookToBePartiallyUpdated.getPrice())
+                            .ifPresent(currentBookInArray::setPrice);
+
+                    return currentBookInArray;
+                })
+                .orElse(null);
+    }
+
     // Search by title
     @GetMapping("/books/search")
     public List<Book> searchByTitle(
