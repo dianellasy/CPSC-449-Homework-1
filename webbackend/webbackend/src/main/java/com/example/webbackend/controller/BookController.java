@@ -103,6 +103,20 @@ public class BookController {
                 .orElse("The book is not found");
     }
 
+    // GET endpoint with pagination
+    @GetMapping("/books/paged")
+    public List<Book> getBooksWithPagination(
+            @RequestParam(defaultValue = "0") int indexOfPage,
+            @RequestParam(defaultValue = "5") int itemsPerPage
+    ) {
+        int numberOfBooksToSkip = indexOfPage * itemsPerPage;
+
+        return books.stream()
+                .skip(numberOfBooksToSkip)
+                .limit(itemsPerPage)
+                .collect(Collectors.toList());
+    }
+
     // Search by title
     @GetMapping("/books/search")
     public List<Book> searchByTitle(
