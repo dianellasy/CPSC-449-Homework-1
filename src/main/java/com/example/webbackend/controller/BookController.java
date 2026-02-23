@@ -139,9 +139,11 @@ public class BookController {
     @PatchMapping("/books/{id}")
     public Book partiallyUpdateBook(@PathVariable Long id, @RequestBody Book bookToBePartiallyUpdated) {
         return books.stream()
+                // Find the first book whose ID matches the path variable
                 .filter(book -> book.getId().equals(id))
                 .findFirst()
                 .map(currentBookInArray -> {
+                    // Update only the fields that were provided in the request
                     if (bookToBePartiallyUpdated.getTitle() != null) {
                         currentBookInArray.setTitle(bookToBePartiallyUpdated.getTitle());
                     }
@@ -154,8 +156,10 @@ public class BookController {
                         currentBookInArray.setPrice(bookToBePartiallyUpdated.getPrice());
                     }
 
+                    // Return the modified book
                     return currentBookInArray;
                 })
+                // If there is no match, return null
                 .orElse(null);
     }
 
@@ -163,13 +167,16 @@ public class BookController {
     @DeleteMapping("/books/{id}")
     public String deleteBook(@PathVariable Long id) {
         return books.stream()
+                // Find the first book whose ID matches the path variable
                 .filter(book -> book.getId().equals(id))
                 .findFirst()
                 .map(bookToBeDeletedInArray -> {
+                    // Remove the matched book from the array
                     books.remove(bookToBeDeletedInArray);
                     return "The book is deleted.";
                 })
-                .orElse("The book is not found");
+                // If there is no match, return "The book is not found"
+                .orElse("The book is not found.");
     }
 
     // GET endpoint with pagination
@@ -178,11 +185,15 @@ public class BookController {
             @RequestParam(defaultValue = "0") int indexOfPage,
             @RequestParam(defaultValue = "5") int itemsPerPage
     ) {
+        // Calculate how many books to skip based on the requested page
         int numberOfBooksToSkip = indexOfPage * itemsPerPage;
 
         return books.stream()
+                // Skip all items before the starting index
                 .skip(numberOfBooksToSkip)
+                // Limit the result to the requested page size
                 .limit(itemsPerPage)
+                // Convert the stream back into a list
                 .collect(Collectors.toList());
     }
 
@@ -199,6 +210,7 @@ public class BookController {
             @RequestParam(defaultValue = "5") int itemsPerPage
     ) {
 
+        // Determine which field to sort by
         Comparator<Book> bookComparator;
 
         switch (sortField.toLowerCase()) {
@@ -216,13 +228,16 @@ public class BookController {
                 break;
         }
 
+        // Reverse the comparator if descending order is requested
         if ("desc".equalsIgnoreCase(sortDirection)) {
             bookComparator = bookComparator.reversed();
         }
 
+        // Calculate how many books to skip based on the requested page
         int numberOfBooksToSkip = indexOfPage * itemsPerPage;
 
         return books.stream()
+                // Apply all filtering conditions when parameters are provided
                 .filter(book -> {
                     boolean matchesTitle =
                             titleFilter == null ||
@@ -240,14 +255,18 @@ public class BookController {
                             maximumPrice == null ||
                                     book.getPrice() <= maximumPrice;
 
+                    // Book must satisfy all filters
                     return matchesTitle && matchesAuthor && matchesMinimumPrice && matchesMaximumPrice;
                 })
 
+                // Sort the filtered results
                 .sorted(bookComparator)
 
+                // Apply pagination: skip all items before the starting index and limit the result to the requested page size
                 .skip(numberOfBooksToSkip)
                 .limit(itemsPerPage)
 
+                // Convert the stream back into a list
                 .collect(Collectors.toList());
     }
 }
